@@ -1,103 +1,37 @@
 import { useEffect, useMemo, useState } from "react"
 import API from "../services/api"
 import {
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Legend,
-  CartesianGrid,
+  ResponsiveContainer, LineChart, Line,
+  XAxis, YAxis, Tooltip, Legend, CartesianGrid,
 } from "recharts"
 
-const styles = {
-  container: {
-    padding: "16px",
-    maxWidth: "900px",
-    margin: "0 auto",
-    fontFamily: "sans-serif",
-  },
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-    gap: "12px",
-    marginBottom: "20px",
-  },
-  field: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "4px",
-  },
-  label: {
-    fontSize: "13px",
-    fontWeight: "500",
-    color: "#333",
-  },
-  input: {
-    padding: "10px",
-    borderRadius: "6px",
-    border: "1px solid #ccc",
-    fontSize: "14px",
-    width: "100%",
-    boxSizing: "border-box",
-  },
-  surveyBox: {
-    background: "#f7f7f7",
-    border: "1px solid #e5e5e5",
-    borderRadius: "10px",
-    padding: "16px",
-    marginBottom: "20px",
-  },
-  surveyGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-    gap: "12px",
-    marginTop: "12px",
-  },
-  surveyItem: {
-    background: "#fff",
-    borderRadius: "8px",
-    padding: "10px",
-    border: "1px solid #eee",
-  },
-  surveyLabel: {
-    fontSize: "13px",
-    fontWeight: "500",
-    marginBottom: "8px",
-    color: "#333",
-    display: "block",
-  },
-  btnRow: {
-    display: "flex",
-    gap: "6px",
-  },
-  calcBtn: {
-    padding: "12px 24px",
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-    background: "#003366",
-    color: "white",
-    fontSize: "15px",
-    width: "100%",
-    marginTop: "4px",
-  },
-  table: {
-    borderCollapse: "collapse",
-    width: "100%",
-    marginTop: "20px",
-    fontSize: "14px",
-  },
-  chart: {
-    width: "100%",
-    height: "320px",
-    marginTop: "30px",
-    background: "#fff",
-    padding: "16px",
-    borderRadius: "12px",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-  },
+const box = {
+  background: "#f7f7f7",
+  border: "1px solid #e5e5e5",
+  borderRadius: "10px",
+  padding: "16px",
+  marginBottom: "20px",
+}
+
+const grid = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+  gap: "12px",
+  marginTop: "12px",
+}
+
+const field = { display: "flex", flexDirection: "column", gap: "4px" }
+
+const label = { fontSize: "13px", fontWeight: "500", color: "#444" }
+
+const input = {
+  padding: "10px",
+  borderRadius: "6px",
+  border: "1px solid #ccc",
+  fontSize: "14px",
+  width: "100%",
+  boxSizing: "border-box",
+  background: "#fff",
 }
 
 export default function Rental() {
@@ -142,8 +76,7 @@ export default function Rental() {
   }
 
   const totalScore = answers.reduce((a, b) => a + b, 0)
-  let riskLabel = "HAFİF"
-  let riskColor = "#27ae60"
+  let riskLabel = "HAFİF", riskColor = "#27ae60"
   if (totalScore > 25) { riskLabel = "ORTA"; riskColor = "#f1c40f" }
   if (totalScore > 40) { riskLabel = "AĞIR"; riskColor = "#e74c3c" }
 
@@ -152,125 +85,99 @@ export default function Rental() {
     if (!price || Number(price) <= 0) { alert("Makine fiyatı geçerli olmalıdır"); return }
     if (!customer.trim()) { alert("Müşteri adı giriniz"); return }
     if (!email.trim()) { alert("E-posta adresi zorunludur"); return }
-
     try {
       setLoading(true)
       setMessage("")
       setMailStatus("")
       setScenarios([])
-
       const res = await API.post("/rental/rental-offer-auto", {
-        customer,
-        email,
-        model,
+        customer, email, model,
         purchase_price: Number(price),
         machine_count: Number(machineCount),
         yearly_hours: Number(yearlyHours),
         answers
       })
-
       setScenarios(res.data?.scenarios || [])
       setMailStatus(res.data?.mail_status || "")
       setMessage("Teklif hesaplandı")
     } catch (err) {
-      const detail = err?.response?.data?.detail || "Teklif hesaplanamadı"
-      setMessage(detail)
+      setMessage(err?.response?.data?.detail || "Teklif hesaplanamadı")
     } finally {
       setLoading(false)
     }
   }
 
-  const chartData = useMemo(() => {
-    return scenarios.map((s) => ({
+  const chartData = useMemo(() =>
+    scenarios.map((s) => ({
       months: s.months,
       monthly: Number(s.monthly_per_machine || 0),
-    }))
-  }, [scenarios])
+    })), [scenarios])
 
   return (
-    <div style={styles.container}>
+    <div style={{ padding: "16px", maxWidth: "900px", margin: "0 auto", fontFamily: "sans-serif" }}>
       <h2 style={{ marginBottom: "16px", fontSize: "20px" }}>Kiralama Teklifi</h2>
 
       {/* Form alanları */}
-      <div style={styles.grid}>
-        <div style={styles.field}>
-          <label style={styles.label}>Model</label>
-          <select value={model} onChange={(e) => handleModelChange(e.target.value)} style={styles.input}>
-            <option value="">Model seç</option>
-            {machines.map((m) => (
-              <option key={m.id} value={m.model_code}>{m.model_code} - {m.model_name}</option>
-            ))}
-          </select>
-        </div>
-
-        <div style={styles.field}>
-          <label style={styles.label}>Makine Fiyatı (USD)</label>
-          <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} style={styles.input} />
-        </div>
-
-        <div style={styles.field}>
-          <label style={styles.label}>Makine Sayısı</label>
-          <input type="number" value={machineCount} onChange={(e) => setMachineCount(e.target.value)} style={styles.input} />
-        </div>
-
-        <div style={styles.field}>
-          <label style={styles.label}>Yıllık Saat</label>
-          <input type="number" value={yearlyHours} onChange={(e) => setYearlyHours(e.target.value)} style={styles.input} />
-        </div>
-
-        <div style={styles.field}>
-          <label style={styles.label}>Müşteri <span style={{ color: "red" }}>*</span></label>
-          <input type="text" value={customer} onChange={(e) => setCustomer(e.target.value)} placeholder="Müşteri adı" style={styles.input} />
-        </div>
-
-        <div style={styles.field}>
-          <label style={styles.label}>E-posta <span style={{ color: "red" }}>*</span></label>
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="ornek@mail.com" style={styles.input} />
+      <div style={box}>
+        <h3 style={{ margin: "0 0 4px 0", fontSize: "15px", color: "#003366" }}>Teklif Bilgileri</h3>
+        <div style={grid}>
+          <div style={field}>
+            <label style={label}>Model</label>
+            <select value={model} onChange={(e) => handleModelChange(e.target.value)} style={input}>
+              <option value="">Model seç</option>
+              {machines.map((m) => (
+                <option key={m.id} value={m.model_code}>{m.model_code} - {m.model_name}</option>
+              ))}
+            </select>
+          </div>
+          <div style={field}>
+            <label style={label}>Makine Fiyatı (USD)</label>
+            <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} style={input} />
+          </div>
+          <div style={field}>
+            <label style={label}>Makine Sayısı</label>
+            <input type="number" value={machineCount} onChange={(e) => setMachineCount(e.target.value)} style={input} />
+          </div>
+          <div style={field}>
+            <label style={label}>Yıllık Saat</label>
+            <input type="number" value={yearlyHours} onChange={(e) => setYearlyHours(e.target.value)} style={input} />
+          </div>
+          <div style={field}>
+            <label style={label}>Müşteri <span style={{ color: "red" }}>*</span></label>
+            <input type="text" value={customer} onChange={(e) => setCustomer(e.target.value)} placeholder="Müşteri adı" style={input} />
+          </div>
+          <div style={field}>
+            <label style={label}>E-posta <span style={{ color: "red" }}>*</span></label>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="ornek@mail.com" style={input} />
+          </div>
         </div>
       </div>
 
       {/* Survey */}
-      <div style={styles.surveyBox}>
-        <h3 style={{ margin: "0 0 4px 0", fontSize: "16px" }}>Kullanım Anketi</h3>
-
+      <div style={box}>
+        <h3 style={{ margin: "0 0 8px 0", fontSize: "15px", color: "#003366" }}>Kullanım Anketi</h3>
         <div style={{
-          padding: "10px",
-          borderRadius: "8px",
-          background: riskColor,
-          color: "#fff",
-          fontWeight: "700",
-          textAlign: "center",
-          fontSize: "15px",
-          marginBottom: "12px",
-          marginTop: "8px",
+          padding: "10px", borderRadius: "8px", background: riskColor,
+          color: "#fff", fontWeight: "700", textAlign: "center",
+          fontSize: "15px", marginBottom: "12px",
         }}>
           Genel Kullanım Seviyesi: {riskLabel}
         </div>
-
-        <div style={styles.surveyGrid}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "10px" }}>
           {surveyQuestions.map((q, i) => (
-            <div key={i} style={styles.surveyItem}>
-              <span style={styles.surveyLabel}>{q}</span>
-              <div style={styles.btnRow}>
+            <div key={i} style={{ background: "#fff", borderRadius: "8px", padding: "10px", border: "1px solid #eee" }}>
+              <span style={{ fontSize: "13px", fontWeight: "500", marginBottom: "8px", color: "#333", display: "block" }}>{q}</span>
+              <div style={{ display: "flex", gap: "6px" }}>
                 {[{ label: "Hafif", val: 1, color: "#27ae60" },
                   { label: "Orta", val: 3, color: "#f1c40f" },
                   { label: "Ağır", val: 5, color: "#e74c3c" }].map(opt => (
-                  <button
-                    key={opt.val}
-                    type="button"
-                    onClick={() => handleAnswerChange(i, opt.val)}
+                  <button key={opt.val} type="button" onClick={() => handleAnswerChange(i, opt.val)}
                     style={{
-                      flex: 1,
-                      padding: "8px 4px",
-                      borderRadius: "6px",
-                      border: "1px solid #ccc",
+                      flex: 1, padding: "8px 4px", borderRadius: "6px", border: "1px solid #ccc",
                       background: answers[i] === opt.val ? opt.color : "#f4f4f4",
                       color: answers[i] === opt.val ? "#fff" : "#333",
-                      cursor: "pointer",
-                      fontWeight: "600",
-                      fontSize: "13px",
-                    }}
-                  >
+                      cursor: "pointer", fontWeight: "600", fontSize: "13px",
+                    }}>
                     {opt.label}
                   </button>
                 ))}
@@ -280,7 +187,12 @@ export default function Rental() {
         </div>
       </div>
 
-      <button onClick={calculateOffer} disabled={loading} style={styles.calcBtn}>
+      <button onClick={calculateOffer} disabled={loading}
+        style={{
+          padding: "12px 24px", border: "none", borderRadius: "8px",
+          cursor: "pointer", background: "#003366", color: "white",
+          fontSize: "15px", width: "100%", marginTop: "4px",
+        }}>
         {loading ? "Hesaplanıyor..." : "Teklif Hesapla ve Mail Gönder"}
       </button>
 
@@ -297,28 +209,37 @@ export default function Rental() {
 
       {scenarios.length > 0 && (
         <>
-          <div style={{ overflowX: "auto", marginTop: "20px" }}>
-            <table style={styles.table} border="1" cellPadding="8">
+          {/* Sonuç tablosu */}
+          <div style={{ ...box, marginTop: "20px", overflowX: "auto" }}>
+            <h3 style={{ margin: "0 0 12px 0", fontSize: "15px", color: "#003366" }}>Kiralama Senaryoları</h3>
+            <table style={{ borderCollapse: "collapse", width: "100%", fontSize: "14px" }}>
               <thead>
                 <tr style={{ background: "#003366", color: "white" }}>
-                  <th>Vade</th>
-                  <th>Aylık / Makine</th>
-                  <th>Sözleşme Toplamı</th>
+                  <th style={{ padding: "10px", textAlign: "center" }}>Vade</th>
+                  <th style={{ padding: "10px", textAlign: "center" }}>Aylık / Makine</th>
+                  <th style={{ padding: "10px", textAlign: "center" }}>Sözleşme Toplamı</th>
                 </tr>
               </thead>
               <tbody>
                 {scenarios.map((s, i) => (
-                  <tr key={i} style={{ background: s.months === 36 ? "#1a4a7a" : "#2c2c2c", textAlign: "center", color: "white" }}>
-                    <td style={{ padding: "10px", color: "white" }}>{s.months} Ay {s.months === 36 ? "⭐" : ""}</td>
-                    <td style={{ padding: "10px", color: "white" }}>{Number(s.monthly_per_machine || 0).toFixed(2)} USD</td>
-                    <td style={{ padding: "10px", color: "white" }}>{(Number(s.monthly_per_machine || 0) * s.months).toFixed(2)} USD</td>
+                  <tr key={i} style={{ background: s.months === 36 ? "#e8f4fd" : "#fff", textAlign: "center" }}>
+                    <td style={{ padding: "10px", color: "#222", fontWeight: s.months === 36 ? "700" : "400" }}>
+                      {s.months} Ay {s.months === 36 ? "⭐" : ""}
+                    </td>
+                    <td style={{ padding: "10px", color: "#222" }}>
+                      {Number(s.monthly_per_machine || 0).toFixed(2)} USD
+                    </td>
+                    <td style={{ padding: "10px", color: "#222" }}>
+                      {(Number(s.monthly_per_machine || 0) * s.months).toFixed(2)} USD
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
 
-          <div style={styles.chart}>
+          {/* Grafik */}
+          <div style={{ ...box, height: "320px" }}>
             <h3 style={{ color: "#0a3d62", fontSize: "15px", marginBottom: "8px" }}>
               ⭐ Önerilen Optimum Kiralama Planı: 36 Ay
             </h3>
@@ -329,12 +250,7 @@ export default function Rental() {
                 <YAxis />
                 <Tooltip formatter={(v) => `${Number(v).toFixed(2)} USD`} />
                 <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="monthly"
-                  stroke="#1f77b4"
-                  strokeWidth={3}
-                  name="Aylık Kira"
+                <Line type="monotone" dataKey="monthly" stroke="#1f77b4" strokeWidth={3} name="Aylık Kira"
                   dot={(props) => {
                     const { cx, cy, payload } = props
                     if (payload.months === 36) return <circle key="dot-36" cx={cx} cy={cy} r={8} fill="red" />
