@@ -1,6 +1,35 @@
 import { useEffect, useState } from "react"
 import API from "../services/api"
 
+const box = {
+  background: "#f7f7f7",
+  border: "1px solid #e5e5e5",
+  borderRadius: "10px",
+  padding: "16px",
+  marginBottom: "20px",
+}
+
+const grid = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+  gap: "12px",
+  marginTop: "12px",
+}
+
+const field = { display: "flex", flexDirection: "column", gap: "4px" }
+
+const label = { fontSize: "13px", fontWeight: "500", color: "#444" }
+
+const input = {
+  padding: "10px",
+  borderRadius: "6px",
+  border: "1px solid #ccc",
+  fontSize: "14px",
+  width: "100%",
+  boxSizing: "border-box",
+  background: "#fff",
+}
+
 export default function Maintenance() {
   const [machines, setMachines] = useState([])
   const [customer, setCustomer] = useState("")
@@ -26,9 +55,7 @@ export default function Maintenance() {
     setAvailableHours([])
     setRows([])
     setTotal(null)
-
     if (!val) return
-
     try {
       const res = await API.get(`/maintenance-hours?model=${val}`)
       setAvailableHours(res.data.available_hours || [])
@@ -40,14 +67,11 @@ export default function Maintenance() {
   const calculate = async () => {
     if (!model) { alert("Model seçiniz"); return }
     if (!hour) { alert("Saat seçiniz"); return }
-
     setLoading(true)
     setMessage("")
-
     try {
       const res = await API.post("/maintenance/calc", {
-        model: model,
-        hours: Number(hour)
+        model, hours: Number(hour)
       })
       setRows(res.data.rows)
       setTotal(res.data.total)
@@ -61,19 +85,11 @@ export default function Maintenance() {
   const downloadPDF = async () => {
     if (!customer) { alert("Müşteri giriniz"); return }
     if (rows.length === 0) { alert("Önce hesaplama yapınız"); return }
-
     try {
-      const res = await API.post(
-        "/maintenance/pdf",
-        {
-          customer: customer,
-          model: model,
-          hours: Number(hour),
-          discount: Number(discount || 0)
-        },
+      const res = await API.post("/maintenance/pdf",
+        { customer, model, hours: Number(hour), discount: Number(discount || 0) },
         { responseType: "blob" }
       )
-
       const url = window.URL.createObjectURL(new Blob([res.data]))
       const link = document.createElement("a")
       link.href = url
@@ -89,16 +105,9 @@ export default function Maintenance() {
   const sendMail = async () => {
     if (!email) { alert("Email giriniz"); return }
     if (rows.length === 0) { alert("Önce hesaplama yapınız"); return }
-
     try {
-      await API.post(
-        `/maintenance/send-mail?email=${email}`,
-        {
-          customer: customer,
-          model: model,
-          hours: Number(hour),
-          discount: Number(discount || 0)
-        }
+      await API.post(`/maintenance/send-mail?email=${email}`,
+        { customer, model, hours: Number(hour), discount: Number(discount || 0) }
       )
       alert("Mail gönderildi")
     } catch {
@@ -110,105 +119,127 @@ export default function Maintenance() {
   const finalTotal = total ? total - (total * discountValue / 100) : 0
 
   return (
-    <div style={{ padding: 30 }}>
-      <h2>Bakım Teklifi</h2>
+    <div style={{ padding: "16px", maxWidth: "900px", margin: "0 auto", fontFamily: "sans-serif" }}>
+      <h2 style={{ marginBottom: "16px", fontSize: "20px" }}>Bakım Teklifi</h2>
 
-      <div style={{ display: "flex", gap: 15, flexWrap: "wrap", marginBottom: 25 }}>
+      {/* Form alanları */}
+      <div style={box}>
+        <h3 style={{ margin: "0 0 4px 0", fontSize: "15px", color: "#003366" }}>Teklif Bilgileri</h3>
+        <div style={grid}>
+          <div style={field}>
+            <label style={label}>Model</label>
+            <select value={model} onChange={e => handleModelChange(e.target.value)} style={input}>
+              <option value="">Model seç</option>
+              {machines.map(m => (
+                <option key={m.id} value={m.model_code}>{m.model_code} - {m.model_name}</option>
+              ))}
+            </select>
+          </div>
 
-        <input
-          placeholder="Müşteri"
-          value={customer}
-          onChange={e => setCustomer(e.target.value)}
-        />
+          <div style={field}>
+            <label style={label}>Bakım Paketi</label>
+            <select value={hour} onChange={e => { setHour(e.target.value); setRows([]); setTotal(null) }}
+              disabled={availableHours.length === 0} style={input}>
+              <option value="">Saat seç</option>
+              {availableHours.map(h => (
+                <option key={h} value={h}>{h} Saat</option>
+              ))}
+            </select>
+          </div>
 
-        <input
-          placeholder="Email"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          style={{ width: 220 }}
-        />
+          <div style={field}>
+            <label style={label}>Müşteri</label>
+            <input type="text" value={customer} onChange={e => setCustomer(e.target.value)}
+              placeholder="Müşteri adı" style={input} />
+          </div>
 
-        <input
-          type="number"
-          value={discount}
-          onChange={e => setDiscount(e.target.value)}
-          placeholder="İndirim %"
-          style={{ width: 100 }}
-        />
+          <div style={field}>
+            <label style={label}>E-posta</label>
+            <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+              placeholder="ornek@mail.com" style={input} />
+          </div>
 
-        <select
-          value={model}
-          onChange={e => handleModelChange(e.target.value)}
-        >
-          <option value="">Model seç</option>
-          {machines.map(m => (
-            <option key={m.id} value={m.model_code}>
-              {m.model_code} - {m.model_name}
-            </option>
-          ))}
-        </select>
+          <div style={field}>
+            <label style={label}>İndirim %</label>
+            <input type="number" value={discount} onChange={e => setDiscount(e.target.value)}
+              placeholder="0" style={input} />
+          </div>
+        </div>
 
-        <select
-          value={hour}
-          onChange={e => {
-            setHour(e.target.value)
-            setRows([])
-            setTotal(null)
-          }}
-          disabled={availableHours.length === 0}
-        >
-          <option value="">Saat seç</option>
-          {availableHours.map(h => (
-            <option key={h} value={h}>{h} Saat</option>
-          ))}
-        </select>
-
-        <button onClick={calculate} disabled={loading}>
+        <button onClick={calculate} disabled={loading}
+          style={{
+            marginTop: "16px", padding: "12px 24px", border: "none",
+            borderRadius: "8px", cursor: "pointer", background: "#003366",
+            color: "white", fontSize: "15px", width: "100%",
+          }}>
           {loading ? "Hesaplanıyor..." : "Hesapla"}
         </button>
-
       </div>
 
-      {message && <p style={{ color: "red" }}>{message}</p>}
+      {message && <p style={{ color: "red", marginBottom: "12px" }}>{message}</p>}
 
       {rows.length > 0 && (
         <>
-          <div style={{ marginBottom: 20 }}>
-            <h3 style={{ background: "#0a7", color: "white", padding: 10, display: "inline-block", marginRight: 10 }}>
-              Toplam: {total.toFixed(2)} USD
-            </h3>
-            <h3 style={{ background: "#003366", color: "white", padding: 10, display: "inline-block" }}>
-              İndirimli Toplam: {finalTotal.toFixed(2)} USD
-            </h3>
+          {/* Toplam */}
+          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginBottom: "16px" }}>
+            <div style={{
+              flex: 1, minWidth: "140px", background: "#0a7", color: "white",
+              padding: "12px", borderRadius: "8px", textAlign: "center", fontWeight: "700"
+            }}>
+              Toplam<br />{total?.toFixed(2)} USD
+            </div>
+            <div style={{
+              flex: 1, minWidth: "140px", background: "#003366", color: "white",
+              padding: "12px", borderRadius: "8px", textAlign: "center", fontWeight: "700"
+            }}>
+              İndirimli Toplam<br />{finalTotal.toFixed(2)} USD
+            </div>
           </div>
 
-          <button onClick={downloadPDF}>PDF İndir</button>
-          <button onClick={sendMail} style={{ marginLeft: 10, background: "#e67e22", color: "white" }}>
-            Mail Gönder
-          </button>
+          {/* PDF ve Mail butonları */}
+          <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+            <button onClick={downloadPDF}
+              style={{
+                flex: 1, padding: "10px", background: "#27ae60", color: "white",
+                border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "600"
+              }}>
+              PDF İndir
+            </button>
+            <button onClick={sendMail}
+              style={{
+                flex: 1, padding: "10px", background: "#e67e22", color: "white",
+                border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "600"
+              }}>
+              Mail Gönder
+            </button>
+          </div>
 
-          <table border="1" cellPadding="6" style={{ marginTop: 15, borderCollapse: "collapse" }}>
-            <thead>
-              <tr>
-                <th>Kod</th>
-                <th>Parça</th>
-                <th>Adet</th>
-                <th>Birim</th>
-                <th>Tutar</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r, i) => (
-                <tr key={i}>
-                  <td>{r.code}</td>
-                  <td>{r.part_name}</td>
-                  <td>{r.quantity}</td>
-                  <td>{r.unit}</td>
-                  <td>{r.line_total?.toFixed(2)}</td>
+          {/* Parça tablosu */}
+          <div style={{ ...box, overflowX: "auto" }}>
+            <h3 style={{ margin: "0 0 12px 0", fontSize: "15px", color: "#003366" }}>Bakım Kalemleri</h3>
+            <table style={{ borderCollapse: "collapse", width: "100%", fontSize: "14px" }}>
+              <thead>
+                <tr style={{ background: "#003366", color: "white" }}>
+                  <th style={{ padding: "10px", textAlign: "left" }}>Kod</th>
+                  <th style={{ padding: "10px", textAlign: "left" }}>Parça</th>
+                  <th style={{ padding: "10px", textAlign: "center" }}>Adet</th>
+                  <th style={{ padding: "10px", textAlign: "center" }}>Birim</th>
+                  <th style={{ padding: "10px", textAlign: "right" }}>Tutar</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {rows.map((r, i) => (
+                  <tr key={i} style={{ background: i % 2 === 0 ? "#fff" : "#f9f9f9" }}>
+                    <td style={{ padding: "8px 10px", color: "#222" }}>{r.code}</td>
+                    <td style={{ padding: "8px 10px", color: "#222" }}>{r.part_name}</td>
+                    <td style={{ padding: "8px 10px", textAlign: "center", color: "#222" }}>{r.quantity}</td>
+                    <td style={{ padding: "8px 10px", textAlign: "center", color: "#222" }}>{r.unit}</td>
+                    <td style={{ padding: "8px 10px", textAlign: "right", color: "#222" }}>{r.line_total?.toFixed(2)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </>
       )}
     </div>
