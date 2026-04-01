@@ -308,10 +308,10 @@ export default function Rental() {
               </thead>
               <tbody>
                 {scenarios.map((s, i) => (
-                  <tr key={i} style={{ background: s.months === 36 ? "#e8f4fd" : "white", textAlign: "center" }}>
-                    <td>{s.months} Ay {s.months === 36 ? "⭐" : ""}</td>
-                    <td>{Number(s.monthly_per_machine || 0).toFixed(2)} USD</td>
-                    <td>{(Number(s.monthly_per_machine || 0) * s.months).toFixed(2)} USD</td>
+                  <tr key={i} style={{ background: s.months === 36 ? "#1a4a7a" : "#2c2c2c", textAlign: "center", color: "white" }}>
+                    <td style={{ padding: "10px", color: "white" }}>{s.months} Ay {s.months === 36 ? "⭐" : ""}</td>
+                    <td style={{ padding: "10px", color: "white" }}>{Number(s.monthly_per_machine || 0).toFixed(2)} USD</td>
+                    <td style={{ padding: "10px", color: "white" }}>{(Number(s.monthly_per_machine || 0) * s.months).toFixed(2)} USD</td>
                   </tr>
                 ))}
               </tbody>
