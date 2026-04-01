@@ -11,6 +11,95 @@ import {
   CartesianGrid,
 } from "recharts"
 
+const styles = {
+  container: {
+    padding: "16px",
+    maxWidth: "900px",
+    margin: "0 auto",
+    fontFamily: "sans-serif",
+  },
+  grid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+    gap: "12px",
+    marginBottom: "20px",
+  },
+  field: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "4px",
+  },
+  label: {
+    fontSize: "13px",
+    fontWeight: "500",
+    color: "#333",
+  },
+  input: {
+    padding: "10px",
+    borderRadius: "6px",
+    border: "1px solid #ccc",
+    fontSize: "14px",
+    width: "100%",
+    boxSizing: "border-box",
+  },
+  surveyBox: {
+    background: "#f7f7f7",
+    border: "1px solid #e5e5e5",
+    borderRadius: "10px",
+    padding: "16px",
+    marginBottom: "20px",
+  },
+  surveyGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+    gap: "12px",
+    marginTop: "12px",
+  },
+  surveyItem: {
+    background: "#fff",
+    borderRadius: "8px",
+    padding: "10px",
+    border: "1px solid #eee",
+  },
+  surveyLabel: {
+    fontSize: "13px",
+    fontWeight: "500",
+    marginBottom: "8px",
+    color: "#333",
+    display: "block",
+  },
+  btnRow: {
+    display: "flex",
+    gap: "6px",
+  },
+  calcBtn: {
+    padding: "12px 24px",
+    border: "none",
+    borderRadius: "8px",
+    cursor: "pointer",
+    background: "#003366",
+    color: "white",
+    fontSize: "15px",
+    width: "100%",
+    marginTop: "4px",
+  },
+  table: {
+    borderCollapse: "collapse",
+    width: "100%",
+    marginTop: "20px",
+    fontSize: "14px",
+  },
+  chart: {
+    width: "100%",
+    height: "320px",
+    marginTop: "30px",
+    background: "#fff",
+    padding: "16px",
+    borderRadius: "12px",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+  },
+}
+
 export default function Rental() {
   const [machines, setMachines] = useState([])
   const [model, setModel] = useState("")
@@ -99,13 +188,14 @@ export default function Rental() {
   }, [scenarios])
 
   return (
-    <div style={{ padding: 30, maxWidth: 1200, margin: "0 auto" }}>
-      <h2 style={{ marginBottom: 20 }}>Kiralama Teklifi</h2>
+    <div style={styles.container}>
+      <h2 style={{ marginBottom: "16px", fontSize: "20px" }}>Kiralama Teklifi</h2>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12, marginBottom: 24 }}>
-        <div>
-          <label>Model</label>
-          <select value={model} onChange={(e) => handleModelChange(e.target.value)} style={{ width: "100%", padding: 10 }}>
+      {/* Form alanları */}
+      <div style={styles.grid}>
+        <div style={styles.field}>
+          <label style={styles.label}>Model</label>
+          <select value={model} onChange={(e) => handleModelChange(e.target.value)} style={styles.input}>
             <option value="">Model seç</option>
             {machines.map((m) => (
               <option key={m.id} value={m.model_code}>{m.model_code} - {m.model_name}</option>
@@ -113,54 +203,72 @@ export default function Rental() {
           </select>
         </div>
 
-        <div>
-          <label>Makine Liste Fiyatı (USD)</label>
-          <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} style={{ width: "100%", padding: 10 }} />
+        <div style={styles.field}>
+          <label style={styles.label}>Makine Fiyatı (USD)</label>
+          <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} style={styles.input} />
         </div>
 
-        <div>
-          <label>Makine Sayısı</label>
-          <input type="number" value={machineCount} onChange={(e) => setMachineCount(e.target.value)} style={{ width: "100%", padding: 10 }} />
+        <div style={styles.field}>
+          <label style={styles.label}>Makine Sayısı</label>
+          <input type="number" value={machineCount} onChange={(e) => setMachineCount(e.target.value)} style={styles.input} />
         </div>
 
-        <div>
-          <label>Yıllık Saat</label>
-          <input type="number" value={yearlyHours} onChange={(e) => setYearlyHours(e.target.value)} style={{ width: "100%", padding: 10 }} />
+        <div style={styles.field}>
+          <label style={styles.label}>Yıllık Saat</label>
+          <input type="number" value={yearlyHours} onChange={(e) => setYearlyHours(e.target.value)} style={styles.input} />
         </div>
 
-        <div>
-          <label>Müşteri <span style={{ color: "red" }}>*</span></label>
-          <input type="text" value={customer} onChange={(e) => setCustomer(e.target.value)} placeholder="Müşteri adı" style={{ width: "100%", padding: 10 }} />
+        <div style={styles.field}>
+          <label style={styles.label}>Müşteri <span style={{ color: "red" }}>*</span></label>
+          <input type="text" value={customer} onChange={(e) => setCustomer(e.target.value)} placeholder="Müşteri adı" style={styles.input} />
         </div>
 
-        <div>
-          <label>E-posta <span style={{ color: "red" }}>*</span></label>
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="ornek@mail.com" style={{ width: "100%", padding: 10 }} />
+        <div style={styles.field}>
+          <label style={styles.label}>E-posta <span style={{ color: "red" }}>*</span></label>
+          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="ornek@mail.com" style={styles.input} />
         </div>
       </div>
 
       {/* Survey */}
-      <div style={{ background: "#f7f7f7", border: "1px solid #e5e5e5", borderRadius: 10, padding: 16, marginBottom: 24 }}>
-        <h3 style={{ marginTop: 0 }}>Survey</h3>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
-          <div style={{ marginTop: 20, padding: 12, borderRadius: 8, background: riskColor, color: "#fff", fontWeight: 700, textAlign: "center", fontSize: 18 }}>
-            Genel Kullanım Seviyesi: {riskLabel}
-          </div>
+      <div style={styles.surveyBox}>
+        <h3 style={{ margin: "0 0 4px 0", fontSize: "16px" }}>Kullanım Anketi</h3>
 
+        <div style={{
+          padding: "10px",
+          borderRadius: "8px",
+          background: riskColor,
+          color: "#fff",
+          fontWeight: "700",
+          textAlign: "center",
+          fontSize: "15px",
+          marginBottom: "12px",
+          marginTop: "8px",
+        }}>
+          Genel Kullanım Seviyesi: {riskLabel}
+        </div>
+
+        <div style={styles.surveyGrid}>
           {surveyQuestions.map((q, i) => (
-            <div key={i}>
-              <label>{q}</label>
-              <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
-                {[{ label: "Hafif", val: 1, color: "#27ae60" }, { label: "Orta", val: 3, color: "#f1c40f" }, { label: "Ağır", val: 5, color: "#e74c3c" }].map(opt => (
+            <div key={i} style={styles.surveyItem}>
+              <span style={styles.surveyLabel}>{q}</span>
+              <div style={styles.btnRow}>
+                {[{ label: "Hafif", val: 1, color: "#27ae60" },
+                  { label: "Orta", val: 3, color: "#f1c40f" },
+                  { label: "Ağır", val: 5, color: "#e74c3c" }].map(opt => (
                   <button
                     key={opt.val}
                     type="button"
                     onClick={() => handleAnswerChange(i, opt.val)}
                     style={{
-                      flex: 1, padding: 8, borderRadius: 6, border: "1px solid #ccc",
+                      flex: 1,
+                      padding: "8px 4px",
+                      borderRadius: "6px",
+                      border: "1px solid #ccc",
                       background: answers[i] === opt.val ? opt.color : "#f4f4f4",
                       color: answers[i] === opt.val ? "#fff" : "#333",
-                      cursor: "pointer", fontWeight: 600
+                      cursor: "pointer",
+                      fontWeight: "600",
+                      fontSize: "13px",
                     }}
                   >
                     {opt.label}
@@ -172,19 +280,15 @@ export default function Rental() {
         </div>
       </div>
 
-      <button
-        onClick={calculateOffer}
-        disabled={loading}
-        style={{ padding: "12px 24px", border: "none", borderRadius: 8, cursor: "pointer", background: "#003366", color: "white", fontSize: 15 }}
-      >
+      <button onClick={calculateOffer} disabled={loading} style={styles.calcBtn}>
         {loading ? "Hesaplanıyor..." : "Teklif Hesapla ve Mail Gönder"}
       </button>
 
       {message && (
-        <div style={{ marginTop: 16, fontWeight: 600, color: message.includes("hesaplandı") ? "green" : "red" }}>
+        <div style={{ marginTop: "12px", fontWeight: "600", color: message.includes("hesaplandı") ? "green" : "red" }}>
           {message}
           {mailStatus && (
-            <span style={{ marginLeft: 10, color: mailStatus === "gönderildi" ? "green" : "orange" }}>
+            <span style={{ marginLeft: "8px", color: mailStatus === "gönderildi" ? "green" : "orange" }}>
               — Teklif maili {mailStatus}
             </span>
           )}
@@ -193,10 +297,10 @@ export default function Rental() {
 
       {scenarios.length > 0 && (
         <>
-          <div style={{ marginTop: 30, overflowX: "auto" }}>
-            <table border="1" cellPadding="8" style={{ borderCollapse: "collapse", width: "100%" }}>
+          <div style={{ overflowX: "auto", marginTop: "20px" }}>
+            <table style={styles.table} border="1" cellPadding="8">
               <thead>
-                <tr>
+                <tr style={{ background: "#003366", color: "white" }}>
                   <th>Vade</th>
                   <th>Aylık / Makine</th>
                   <th>Sözleşme Toplamı</th>
@@ -204,7 +308,7 @@ export default function Rental() {
               </thead>
               <tbody>
                 {scenarios.map((s, i) => (
-                  <tr key={i} style={{ background: s.months === 36 ? "#e8f4fd" : "white" }}>
+                  <tr key={i} style={{ background: s.months === 36 ? "#e8f4fd" : "white", textAlign: "center" }}>
                     <td>{s.months} Ay {s.months === 36 ? "⭐" : ""}</td>
                     <td>{Number(s.monthly_per_machine || 0).toFixed(2)} USD</td>
                     <td>{(Number(s.monthly_per_machine || 0) * s.months).toFixed(2)} USD</td>
@@ -214,9 +318,11 @@ export default function Rental() {
             </table>
           </div>
 
-          <div style={{ width: "100%", height: 420, marginTop: 40, background: "#fff", padding: 20, borderRadius: 12, boxShadow: "0 8px 25px rgba(0,0,0,0.08)" }}>
-            <h3 style={{ color: "#0a3d62" }}>⭐ Önerilen Optimum Kiralama Planı: 36 Ay</h3>
-            <ResponsiveContainer width="100%" height="90%">
+          <div style={styles.chart}>
+            <h3 style={{ color: "#0a3d62", fontSize: "15px", marginBottom: "8px" }}>
+              ⭐ Önerilen Optimum Kiralama Planı: 36 Ay
+            </h3>
+            <ResponsiveContainer width="100%" height="85%">
               <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="months" />
