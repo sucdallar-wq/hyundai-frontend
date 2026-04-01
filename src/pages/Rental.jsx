@@ -5,35 +5,6 @@ import {
   XAxis, YAxis, Tooltip, Legend, CartesianGrid,
 } from "recharts"
 
-const box = {
-  background: "#f7f7f7",
-  border: "1px solid #e5e5e5",
-  borderRadius: "10px",
-  padding: "16px",
-  marginBottom: "20px",
-}
-
-const grid = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-  gap: "12px",
-  marginTop: "12px",
-}
-
-const field = { display: "flex", flexDirection: "column", gap: "4px" }
-
-const label = { fontSize: "13px", fontWeight: "500", color: "#444" }
-
-const input = {
-  padding: "10px",
-  borderRadius: "6px",
-  border: "1px solid #ccc",
-  fontSize: "14px",
-  width: "100%",
-  boxSizing: "border-box",
-  background: "#fff",
-}
-
 export default function Rental() {
   const [machines, setMachines] = useState([])
   const [model, setModel] = useState("")
@@ -113,70 +84,73 @@ export default function Rental() {
       monthly: Number(s.monthly_per_machine || 0),
     })), [scenarios])
 
-  return (
-    <div style={{ padding: "16px", maxWidth: "900px", margin: "0 auto", fontFamily: "sans-serif" }}>
-      <h2 style={{ marginBottom: "16px", fontSize: "20px" }}>Kiralama Teklifi</h2>
+  const selectStyle = { padding: 10, borderRadius: 6, border: "1px solid #ccc", fontSize: 14, width: "100%" }
+  const inputStyle = { padding: 10, borderRadius: 6, border: "1px solid #ccc", fontSize: 14, width: "100%" }
+  const labelStyle = { display: "block", fontSize: 13, fontWeight: 500, marginBottom: 4 }
+  const fieldStyle = { marginBottom: 12 }
 
-      {/* Form alanları */}
-      <div style={box}>
-        <h3 style={{ margin: "0 0 4px 0", fontSize: "15px", color: "#003366" }}>Teklif Bilgileri</h3>
-        <div style={grid}>
-          <div style={field}>
-            <label style={label}>Model</label>
-            <select value={model} onChange={(e) => handleModelChange(e.target.value)} style={input}>
-              <option value="">Model seç</option>
-              {machines.map((m) => (
-                <option key={m.id} value={m.model_code}>{m.model_code} - {m.model_name}</option>
-              ))}
-            </select>
+  return (
+    <div style={{ padding: 16, maxWidth: 900, margin: "0 auto", fontFamily: "sans-serif" }}>
+      <h2 style={{ marginBottom: 16, fontSize: 20 }}>Kiralama Teklifi</h2>
+
+      {/* Form */}
+      <div style={{ background: "#f7f7f7", border: "1px solid #e5e5e5", borderRadius: 10, padding: 16, marginBottom: 20 }}>
+        <h3 style={{ margin: "0 0 12px 0", fontSize: 15, color: "#003366" }}>Teklif Bilgileri</h3>
+
+        <div style={fieldStyle}>
+          <label style={labelStyle}>Model</label>
+          <select value={model} onChange={(e) => handleModelChange(e.target.value)} style={selectStyle}>
+            <option value="">Model seç</option>
+            {machines.map((m) => (
+              <option key={m.id} value={m.model_code}>{m.model_code} - {m.model_name}</option>
+            ))}
+          </select>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12, marginBottom: 12 }}>
+          <div>
+            <label style={labelStyle}>Makine Fiyatı (USD)</label>
+            <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} style={inputStyle} />
           </div>
-          <div style={field}>
-            <label style={label}>Makine Fiyatı (USD)</label>
-            <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} style={input} />
+          <div>
+            <label style={labelStyle}>Makine Sayısı</label>
+            <input type="number" value={machineCount} onChange={(e) => setMachineCount(e.target.value)} style={inputStyle} />
           </div>
-          <div style={field}>
-            <label style={label}>Makine Sayısı</label>
-            <input type="number" value={machineCount} onChange={(e) => setMachineCount(e.target.value)} style={input} />
+          <div>
+            <label style={labelStyle}>Yıllık Saat</label>
+            <input type="number" value={yearlyHours} onChange={(e) => setYearlyHours(e.target.value)} style={inputStyle} />
           </div>
-          <div style={field}>
-            <label style={label}>Yıllık Saat</label>
-            <input type="number" value={yearlyHours} onChange={(e) => setYearlyHours(e.target.value)} style={input} />
+          <div>
+            <label style={labelStyle}>Müşteri <span style={{ color: "red" }}>*</span></label>
+            <input type="text" value={customer} onChange={(e) => setCustomer(e.target.value)} placeholder="Müşteri adı" style={inputStyle} />
           </div>
-          <div style={field}>
-            <label style={label}>Müşteri <span style={{ color: "red" }}>*</span></label>
-            <input type="text" value={customer} onChange={(e) => setCustomer(e.target.value)} placeholder="Müşteri adı" style={input} />
-          </div>
-          <div style={field}>
-            <label style={label}>E-posta <span style={{ color: "red" }}>*</span></label>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="ornek@mail.com" style={input} />
+          <div>
+            <label style={labelStyle}>E-posta <span style={{ color: "red" }}>*</span></label>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="ornek@mail.com" style={inputStyle} />
           </div>
         </div>
       </div>
 
       {/* Survey */}
-      <div style={box}>
-        <h3 style={{ margin: "0 0 8px 0", fontSize: "15px", color: "#003366" }}>Kullanım Anketi</h3>
-        <div style={{
-          padding: "10px", borderRadius: "8px", background: riskColor,
-          color: "#fff", fontWeight: "700", textAlign: "center",
-          fontSize: "15px", marginBottom: "12px",
-        }}>
+      <div style={{ background: "#f7f7f7", border: "1px solid #e5e5e5", borderRadius: 10, padding: 16, marginBottom: 20 }}>
+        <h3 style={{ margin: "0 0 8px 0", fontSize: 15, color: "#003366" }}>Kullanım Anketi</h3>
+        <div style={{ padding: 10, borderRadius: 8, background: riskColor, color: "#fff", fontWeight: 700, textAlign: "center", fontSize: 15, marginBottom: 12 }}>
           Genel Kullanım Seviyesi: {riskLabel}
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "10px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 10 }}>
           {surveyQuestions.map((q, i) => (
-            <div key={i} style={{ background: "#fff", borderRadius: "8px", padding: "10px", border: "1px solid #eee" }}>
-              <span style={{ fontSize: "13px", fontWeight: "500", marginBottom: "8px", color: "#333", display: "block" }}>{q}</span>
-              <div style={{ display: "flex", gap: "6px" }}>
+            <div key={i} style={{ background: "#fff", borderRadius: 8, padding: 10, border: "1px solid #eee" }}>
+              <span style={{ fontSize: 13, fontWeight: 500, marginBottom: 8, color: "#333", display: "block" }}>{q}</span>
+              <div style={{ display: "flex", gap: 6 }}>
                 {[{ label: "Hafif", val: 1, color: "#27ae60" },
                   { label: "Orta", val: 3, color: "#f1c40f" },
                   { label: "Ağır", val: 5, color: "#e74c3c" }].map(opt => (
                   <button key={opt.val} type="button" onClick={() => handleAnswerChange(i, opt.val)}
                     style={{
-                      flex: 1, padding: "8px 4px", borderRadius: "6px", border: "1px solid #ccc",
+                      flex: 1, padding: "8px 4px", borderRadius: 6, border: "1px solid #ccc",
                       background: answers[i] === opt.val ? opt.color : "#f4f4f4",
                       color: answers[i] === opt.val ? "#fff" : "#333",
-                      cursor: "pointer", fontWeight: "600", fontSize: "13px",
+                      cursor: "pointer", fontWeight: 600, fontSize: 13,
                     }}>
                     {opt.label}
                   </button>
@@ -188,19 +162,15 @@ export default function Rental() {
       </div>
 
       <button onClick={calculateOffer} disabled={loading}
-        style={{
-          padding: "12px 24px", border: "none", borderRadius: "8px",
-          cursor: "pointer", background: "#003366", color: "white",
-          fontSize: "15px", width: "100%", marginTop: "4px",
-        }}>
+        style={{ padding: "12px 24px", border: "none", borderRadius: 8, cursor: "pointer", background: "#003366", color: "white", fontSize: 15, width: "100%" }}>
         {loading ? "Hesaplanıyor..." : "Teklif Hesapla ve Mail Gönder"}
       </button>
 
       {message && (
-        <div style={{ marginTop: "12px", fontWeight: "600", color: message.includes("hesaplandı") ? "green" : "red" }}>
+        <div style={{ marginTop: 12, fontWeight: 600, color: message.includes("hesaplandı") ? "green" : "red" }}>
           {message}
           {mailStatus && (
-            <span style={{ marginLeft: "8px", color: mailStatus === "gönderildi" ? "green" : "orange" }}>
+            <span style={{ marginLeft: 8, color: mailStatus === "gönderildi" ? "green" : "orange" }}>
               — Teklif maili {mailStatus}
             </span>
           )}
@@ -209,40 +179,32 @@ export default function Rental() {
 
       {scenarios.length > 0 && (
         <>
-          {/* Sonuç tablosu */}
-          <div style={{ ...box, marginTop: "20px", overflowX: "auto" }}>
-            <h3 style={{ margin: "0 0 12px 0", fontSize: "15px", color: "#003366" }}>Kiralama Senaryoları</h3>
-            <table style={{ borderCollapse: "collapse", width: "100%", fontSize: "14px" }}>
+          <div style={{ background: "#f7f7f7", border: "1px solid #e5e5e5", borderRadius: 10, padding: 16, marginTop: 20, overflowX: "auto" }}>
+            <h3 style={{ margin: "0 0 12px 0", fontSize: 15, color: "#003366" }}>Kiralama Senaryoları</h3>
+            <table style={{ borderCollapse: "collapse", width: "100%", fontSize: 14 }}>
               <thead>
                 <tr style={{ background: "#003366", color: "white" }}>
-                  <th style={{ padding: "10px", textAlign: "center" }}>Vade</th>
-                  <th style={{ padding: "10px", textAlign: "center" }}>Aylık / Makine</th>
-                  <th style={{ padding: "10px", textAlign: "center" }}>Sözleşme Toplamı</th>
+                  <th style={{ padding: 10, textAlign: "center" }}>Vade</th>
+                  <th style={{ padding: 10, textAlign: "center" }}>Aylık / Makine</th>
+                  <th style={{ padding: 10, textAlign: "center" }}>Sözleşme Toplamı</th>
                 </tr>
               </thead>
               <tbody>
                 {scenarios.map((s, i) => (
                   <tr key={i} style={{ background: s.months === 36 ? "#e8f4fd" : "#fff", textAlign: "center" }}>
-                    <td style={{ padding: "10px", color: "#222", fontWeight: s.months === 36 ? "700" : "400" }}>
+                    <td style={{ padding: 10, color: "#222", fontWeight: s.months === 36 ? 700 : 400 }}>
                       {s.months} Ay {s.months === 36 ? "⭐" : ""}
                     </td>
-                    <td style={{ padding: "10px", color: "#222" }}>
-                      {Number(s.monthly_per_machine || 0).toFixed(2)} USD
-                    </td>
-                    <td style={{ padding: "10px", color: "#222" }}>
-                      {(Number(s.monthly_per_machine || 0) * s.months).toFixed(2)} USD
-                    </td>
+                    <td style={{ padding: 10, color: "#222" }}>{Number(s.monthly_per_machine || 0).toFixed(2)} USD</td>
+                    <td style={{ padding: 10, color: "#222" }}>{(Number(s.monthly_per_machine || 0) * s.months).toFixed(2)} USD</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
 
-          {/* Grafik */}
-          <div style={{ ...box, height: "320px" }}>
-            <h3 style={{ color: "#0a3d62", fontSize: "15px", marginBottom: "8px" }}>
-              ⭐ Önerilen Optimum Kiralama Planı: 36 Ay
-            </h3>
+          <div style={{ background: "#f7f7f7", border: "1px solid #e5e5e5", borderRadius: 10, padding: 16, marginTop: 20, height: 320 }}>
+            <h3 style={{ color: "#0a3d62", fontSize: 15, marginBottom: 8 }}>⭐ Önerilen Optimum Kiralama Planı: 36 Ay</h3>
             <ResponsiveContainer width="100%" height="85%">
               <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" />

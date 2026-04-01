@@ -1,35 +1,6 @@
 import { useEffect, useState } from "react"
 import API from "../services/api"
 
-const box = {
-  background: "#f7f7f7",
-  border: "1px solid #e5e5e5",
-  borderRadius: "10px",
-  padding: "16px",
-  marginBottom: "20px",
-}
-
-const grid = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-  gap: "12px",
-  marginTop: "12px",
-}
-
-const field = { display: "flex", flexDirection: "column", gap: "4px" }
-
-const label = { fontSize: "13px", fontWeight: "500", color: "#444" }
-
-const input = {
-  padding: "10px",
-  borderRadius: "6px",
-  border: "1px solid #ccc",
-  fontSize: "14px",
-  width: "100%",
-  boxSizing: "border-box",
-  background: "#fff",
-}
-
 export default function Maintenance() {
   const [machines, setMachines] = useState([])
   const [customer, setCustomer] = useState("")
@@ -70,9 +41,7 @@ export default function Maintenance() {
     setLoading(true)
     setMessage("")
     try {
-      const res = await API.post("/maintenance/calc", {
-        model, hours: Number(hour)
-      })
+      const res = await API.post("/maintenance/calc", { model, hours: Number(hour) })
       setRows(res.data.rows)
       setTotal(res.data.total)
     } catch (err) {
@@ -97,9 +66,7 @@ export default function Maintenance() {
       document.body.appendChild(link)
       link.click()
       link.remove()
-    } catch {
-      alert("PDF indirilemedi")
-    }
+    } catch { alert("PDF indirilemedi") }
   }
 
   const sendMail = async () => {
@@ -110,114 +77,97 @@ export default function Maintenance() {
         { customer, model, hours: Number(hour), discount: Number(discount || 0) }
       )
       alert("Mail gönderildi")
-    } catch {
-      alert("Mail gönderilemedi")
-    }
+    } catch { alert("Mail gönderilemedi") }
   }
 
   const discountValue = Number(discount || 0)
   const finalTotal = total ? total - (total * discountValue / 100) : 0
 
   return (
-    <div style={{ padding: "16px", maxWidth: "900px", margin: "0 auto", fontFamily: "sans-serif" }}>
-      <h2 style={{ marginBottom: "16px", fontSize: "20px" }}>Bakım Teklifi</h2>
+    <div style={{ padding: 16, maxWidth: 900, margin: "0 auto", fontFamily: "sans-serif" }}>
+      <h2 style={{ marginBottom: 16, fontSize: 20 }}>Bakım Teklifi</h2>
 
-      {/* Form alanları */}
-      <div style={box}>
-        <h3 style={{ margin: "0 0 4px 0", fontSize: "15px", color: "#003366" }}>Teklif Bilgileri</h3>
-        <div style={grid}>
-          <div style={field}>
-            <label style={label}>Model</label>
-            <select value={model} onChange={e => handleModelChange(e.target.value)} style={input}>
-              <option value="">Model seç</option>
-              {machines.map(m => (
-                <option key={m.id} value={m.model_code}>{m.model_code} - {m.model_name}</option>
-              ))}
-            </select>
-          </div>
+      {/* Form */}
+      <div style={{ background: "#f7f7f7", border: "1px solid #e5e5e5", borderRadius: 10, padding: 16, marginBottom: 20 }}>
+        <h3 style={{ margin: "0 0 12px 0", fontSize: 15, color: "#003366" }}>Teklif Bilgileri</h3>
 
-          <div style={field}>
-            <label style={label}>Bakım Paketi</label>
-            <select value={hour} onChange={e => { setHour(e.target.value); setRows([]); setTotal(null) }}
-              disabled={availableHours.length === 0} style={input}>
-              <option value="">Saat seç</option>
-              {availableHours.map(h => (
-                <option key={h} value={h}>{h} Saat</option>
-              ))}
-            </select>
-          </div>
+        <div style={{ marginBottom: 12 }}>
+          <label style={{ display: "block", fontSize: 13, fontWeight: 500, marginBottom: 4 }}>Model</label>
+          <select value={model} onChange={e => handleModelChange(e.target.value)}
+            style={{ padding: 10, borderRadius: 6, border: "1px solid #ccc", fontSize: 14, width: "100%" }}>
+            <option value="">Model seç</option>
+            {machines.map(m => (
+              <option key={m.id} value={m.model_code}>{m.model_code} - {m.model_name}</option>
+            ))}
+          </select>
+        </div>
 
-          <div style={field}>
-            <label style={label}>Müşteri</label>
+        <div style={{ marginBottom: 12 }}>
+          <label style={{ display: "block", fontSize: 13, fontWeight: 500, marginBottom: 4 }}>Bakım Paketi</label>
+          <select value={hour} onChange={e => { setHour(e.target.value); setRows([]); setTotal(null) }}
+            disabled={availableHours.length === 0}
+            style={{ padding: 10, borderRadius: 6, border: "1px solid #ccc", fontSize: 14, width: "100%" }}>
+            <option value="">Saat seç</option>
+            {availableHours.map(h => (
+              <option key={h} value={h}>{h} Saat</option>
+            ))}
+          </select>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12, marginBottom: 12 }}>
+          <div>
+            <label style={{ display: "block", fontSize: 13, fontWeight: 500, marginBottom: 4 }}>Müşteri</label>
             <input type="text" value={customer} onChange={e => setCustomer(e.target.value)}
-              placeholder="Müşteri adı" style={input} />
+              placeholder="Müşteri adı"
+              style={{ padding: 10, borderRadius: 6, border: "1px solid #ccc", fontSize: 14, width: "100%" }} />
           </div>
-
-          <div style={field}>
-            <label style={label}>E-posta</label>
+          <div>
+            <label style={{ display: "block", fontSize: 13, fontWeight: 500, marginBottom: 4 }}>E-posta</label>
             <input type="email" value={email} onChange={e => setEmail(e.target.value)}
-              placeholder="ornek@mail.com" style={input} />
+              placeholder="ornek@mail.com"
+              style={{ padding: 10, borderRadius: 6, border: "1px solid #ccc", fontSize: 14, width: "100%" }} />
           </div>
-
-          <div style={field}>
-            <label style={label}>İndirim %</label>
+          <div>
+            <label style={{ display: "block", fontSize: 13, fontWeight: 500, marginBottom: 4 }}>İndirim %</label>
             <input type="number" value={discount} onChange={e => setDiscount(e.target.value)}
-              placeholder="0" style={input} />
+              placeholder="0"
+              style={{ padding: 10, borderRadius: 6, border: "1px solid #ccc", fontSize: 14, width: "100%" }} />
           </div>
         </div>
 
         <button onClick={calculate} disabled={loading}
-          style={{
-            marginTop: "16px", padding: "12px 24px", border: "none",
-            borderRadius: "8px", cursor: "pointer", background: "#003366",
-            color: "white", fontSize: "15px", width: "100%",
-          }}>
+          style={{ padding: "12px 24px", border: "none", borderRadius: 8, cursor: "pointer", background: "#003366", color: "white", fontSize: 15, width: "100%" }}>
           {loading ? "Hesaplanıyor..." : "Hesapla"}
         </button>
       </div>
 
-      {message && <p style={{ color: "red", marginBottom: "12px" }}>{message}</p>}
+      {message && <p style={{ color: "red", marginBottom: 12 }}>{message}</p>}
 
       {rows.length > 0 && (
         <>
-          {/* Toplam */}
-          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginBottom: "16px" }}>
-            <div style={{
-              flex: 1, minWidth: "140px", background: "#0a7", color: "white",
-              padding: "12px", borderRadius: "8px", textAlign: "center", fontWeight: "700"
-            }}>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 16 }}>
+            <div style={{ flex: 1, minWidth: 140, background: "#0a7", color: "white", padding: 12, borderRadius: 8, textAlign: "center", fontWeight: 700 }}>
               Toplam<br />{total?.toFixed(2)} USD
             </div>
-            <div style={{
-              flex: 1, minWidth: "140px", background: "#003366", color: "white",
-              padding: "12px", borderRadius: "8px", textAlign: "center", fontWeight: "700"
-            }}>
+            <div style={{ flex: 1, minWidth: 140, background: "#003366", color: "white", padding: 12, borderRadius: 8, textAlign: "center", fontWeight: 700 }}>
               İndirimli Toplam<br />{finalTotal.toFixed(2)} USD
             </div>
           </div>
 
-          {/* PDF ve Mail butonları */}
-          <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+          <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
             <button onClick={downloadPDF}
-              style={{
-                flex: 1, padding: "10px", background: "#27ae60", color: "white",
-                border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "600"
-              }}>
+              style={{ flex: 1, padding: 10, background: "#27ae60", color: "white", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600 }}>
               PDF İndir
             </button>
             <button onClick={sendMail}
-              style={{
-                flex: 1, padding: "10px", background: "#e67e22", color: "white",
-                border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "600"
-              }}>
+              style={{ flex: 1, padding: 10, background: "#e67e22", color: "white", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600 }}>
               Mail Gönder
             </button>
           </div>
 
-          {/* Parça tablosu */}
-          <div style={{ ...box, overflowX: "auto" }}>
-            <h3 style={{ margin: "0 0 12px 0", fontSize: "15px", color: "#003366" }}>Bakım Kalemleri</h3>
-            <table style={{ borderCollapse: "collapse", width: "100%", fontSize: "14px" }}>
+          <div style={{ background: "#f7f7f7", border: "1px solid #e5e5e5", borderRadius: 10, padding: 16, overflowX: "auto" }}>
+            <h3 style={{ margin: "0 0 12px 0", fontSize: 15, color: "#003366" }}>Bakım Kalemleri</h3>
+            <table style={{ borderCollapse: "collapse", width: "100%", fontSize: 14 }}>
               <thead>
                 <tr style={{ background: "#003366", color: "white" }}>
                   <th style={{ padding: "10px", textAlign: "left" }}>Kod</th>
