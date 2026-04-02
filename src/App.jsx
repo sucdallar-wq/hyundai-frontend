@@ -27,7 +27,7 @@ function NavBar() {
     { path: "/dashboard", label: "Ana Sayfa" },
     { path: "/maintenance", label: "Bakım" },
     { path: "/rental", label: "Kiralama" },
-    { path: "/offers", label: "Teklifler" },
+    // { path: "/offers", label: "Teklifler" },
   ]
 
   return (
