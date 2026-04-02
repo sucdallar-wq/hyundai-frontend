@@ -6,7 +6,7 @@ export default function Dashboard() {
   const pages = [
     { path: "/maintenance", label: "Bakım Teklifi", color: "#0a7", icon: "🔧" },
     { path: "/rental", label: "Kiralama Teklifi", color: "#003366", icon: "🚛" },
-    //  geçici kaldırma { path: "/offers", label: "Teklifler", color: "#e67e22", icon: "📋" },
+    // { path: "/offers", label: "Teklifler", color: "#e67e22", icon: "📋" },
   ]
 
   return (
