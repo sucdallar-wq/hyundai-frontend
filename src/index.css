@@ -68,5 +68,11 @@ button:focus-visible {
 }
 
 label {
-  color: #333;
+  color: #222;
+}
+
+@media (prefers-color-scheme: dark) {
+  label {
+    color: #f0f0f0;
+  }
 }
