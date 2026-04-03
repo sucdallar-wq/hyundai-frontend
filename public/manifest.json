@@ -1,0 +1,21 @@
+{
+  "name": "Hyundai Forklift Bakım ve Kiralama Teklif",
+  "short_name": "İstifmak",
+  "description": "Hyundai Forklift Teklif Yönetim Sistemi",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#003366",
+  "theme_color": "#003366",
+  "icons": [
+    {
+      "src": "/hyundai_logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/hyundai_logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
