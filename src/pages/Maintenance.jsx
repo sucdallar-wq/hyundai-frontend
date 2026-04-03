@@ -128,9 +128,11 @@ export default function Maintenance() {
               style={{ padding: 10, borderRadius: 6, border: "1px solid #ccc", fontSize: 14, width: "100%" }} />
           </div>
           <div>
-            <label style={{ display: "block", fontSize: 13, fontWeight: 500, marginBottom: 4 }}>İndirim %</label>
+            <label style={{ display: "block", fontSize: 13, fontWeight: 500, marginBottom: 4 }}>
+              indirim Oranı (%)
+            </label>
             <input type="number" value={discount} onChange={e => setDiscount(e.target.value)}
-              placeholder="0"
+              placeholder="Örn: 10"
               style={{ padding: 10, borderRadius: 6, border: "1px solid #ccc", fontSize: 14, width: "100%" }} />
           </div>
         </div>
