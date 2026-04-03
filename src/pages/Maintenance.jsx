@@ -129,7 +129,7 @@ export default function Maintenance() {
           </div>
           <div>
             <label style={{ display: "block", fontSize: 13, fontWeight: 500, marginBottom: 4 }}>
-              indirim Oranı (%)
+              İndirim Oranı (%)
             </label>
             <input type="number" value={discount} onChange={e => setDiscount(e.target.value)}
               placeholder="Örn: 10"
