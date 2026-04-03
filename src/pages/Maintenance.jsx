@@ -92,7 +92,7 @@ export default function Maintenance() {
         <h3 style={{ margin: "0 0 12px 0", fontSize: 15, color: "#003366" }}>Teklif Bilgileri</h3>
 
         <div style={{ marginBottom: 12 }}>
-          <label style={{ display: "block", fontSize: 13, fontWeight: 500, marginBottom: 4 }}>Model</label>
+          <label style={{ display: "block", fontSize: 13, fontWeight: 500, marginBottom: 4, color: "#333" }}>Model</label>
           <select value={model} onChange={e => handleModelChange(e.target.value)}
             style={{ padding: 10, borderRadius: 6, border: "1px solid #ccc", fontSize: 14, width: "100%" }}>
             <option value="">Model seç</option>
