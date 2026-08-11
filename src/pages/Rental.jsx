@@ -15,7 +15,7 @@ export default function Rental() {
   const [email, setEmail] = useState("")
   const [answers, setAnswers] = useState(Array(11).fill(1))
   const [scenarios, setScenarios] = useState([])
-  const [pdfFile, setPdfFile] = useState("")
+  const [offerId, setOfferId] = useState(null)
   const [message, setMessage] = useState("")
   const [mailMessage, setMailMessage] = useState("")
   const [loading, setLoading] = useState(false)
@@ -74,7 +74,7 @@ export default function Rental() {
       setMessage("")
       setMailMessage("")
       setScenarios([])
-      setPdfFile("")
+      setOfferId(null)
 
       const res = await API.post("/rental/rental-offer-auto", {
         customer,
@@ -87,7 +87,7 @@ export default function Rental() {
       })
 
       setScenarios(res.data?.scenarios || [])
-      setPdfFile(res.data?.pdf_file || "")
+      setOfferId(res.data?.offer_id || null)
       setMessage("Teklif hesaplandı ✅")
     } catch (err) {
       setMessage(err?.response?.data?.detail || "Teklif hesaplanamadı")
@@ -98,12 +98,12 @@ export default function Rental() {
 
   const sendMail = async () => {
     if (!email.trim()) { alert("E-posta adresi giriniz"); return }
-    if (!pdfFile) { alert("Önce teklif hesaplayınız"); return }
+    if (!offerId) { alert("Önce teklif hesaplayınız"); return }
 
     try {
       setMailLoading(true)
       setMailMessage("")
-      await API.post(`/rental/send-mail?email=${email}&pdf_file=${pdfFile}`)
+      await API.post(`/rental/send-mail?email=${email}&offer_id=${offerId}`)
       setMailMessage("Mail gönderildi ✅")
     } catch {
       setMailMessage("Mail gönderilemedi ❌")
