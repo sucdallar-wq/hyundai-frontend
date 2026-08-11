@@ -45,7 +45,7 @@ export default function Rental() {
   const handleModelChange = (code) => {
     setModel(code)
     setScenarios([])
-    setPdfFile("")
+    setOfferId(null)
     setMessage("")
     setMailMessage("")
     const selected = machines.find((m) => m.model_code === code)
