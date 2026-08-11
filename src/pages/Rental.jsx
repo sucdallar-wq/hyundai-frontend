@@ -117,8 +117,16 @@ export default function Rental() {
             <input type="number" value={machineCount} onChange={(e) => setMachineCount(e.target.value)} style={inputStyle} />
           </div>
           <div>
-            <label style={labelStyle}>Yıllık Saat</label>
-            <input type="number" value={yearlyHours} onChange={(e) => setYearlyHours(e.target.value)} style={inputStyle} />
+             <label style={labelStyle}>Yıllık Çalışma Saati</label>
+             <select value={yearlyHours} onChange={(e) => setYearlyHours(e.target.value)} style={selectStyle}>
+               <option value="">Saat seç</option>
+               <option value="1000">1.000 saat — Tek vardiya, az kullanım</option>
+               <option value="1500">1.500 saat — Tek vardiya, yoğun</option>
+               <option value="2000">2.000 saat — Standart tek vardiya</option>
+               <option value="3000">3.000 saat — Çift vardiya</option>
+               <option value="4000">4.000 saat — Yoğun çift vardiya</option>
+               <option value="6000">6.000 saat — Üç vardiya</option>
+             </select>
           </div>
           <div>
             <label style={labelStyle}>Müşteri <span style={{ color: "red" }}>*</span></label>
