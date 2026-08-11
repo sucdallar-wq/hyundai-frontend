@@ -10,19 +10,30 @@ export default function Rental() {
   const [model, setModel] = useState("")
   const [price, setPrice] = useState("")
   const [machineCount, setMachineCount] = useState(1)
-  const [yearlyHours, setYearlyHours] = useState(2000)
+  const [yearlyHours, setYearlyHours] = useState("")
   const [customer, setCustomer] = useState("")
   const [email, setEmail] = useState("")
   const [answers, setAnswers] = useState(Array(11).fill(1))
   const [scenarios, setScenarios] = useState([])
-  const [mailStatus, setMailStatus] = useState("")
+  const [pdfFile, setPdfFile] = useState("")
   const [message, setMessage] = useState("")
+  const [mailMessage, setMailMessage] = useState("")
   const [loading, setLoading] = useState(false)
+  const [mailLoading, setMailLoading] = useState(false)
 
   const surveyQuestions = [
     "İç / Dış Çalışma", "Zemin Durumu", "Tümsek", "Eğim",
     "Tozlu Ortam", "Islak Zemin", "Sıcak Çalışma Ortamı",
     "Soğuk Depo", "Servis Uzaklığı", "İtme / Çekme", "Vardiya Yoğunluğu"
+  ]
+
+  const hourOptions = [
+    { value: "1000", label: "1.000 saat — Tek vardiya, az kullanım" },
+    { value: "1500", label: "1.500 saat — Tek vardiya, yoğun" },
+    { value: "2000", label: "2.000 saat — Standart tek vardiya" },
+    { value: "3000", label: "3.000 saat — Çift vardiya" },
+    { value: "4000", label: "4.000 saat — Yoğun çift vardiya" },
+    { value: "6000", label: "6.000 saat — Üç vardiya" },
   ]
 
   useEffect(() => {
@@ -34,8 +45,9 @@ export default function Rental() {
   const handleModelChange = (code) => {
     setModel(code)
     setScenarios([])
+    setPdfFile("")
     setMessage("")
-    setMailStatus("")
+    setMailMessage("")
     const selected = machines.find((m) => m.model_code === code)
     setPrice(selected?.price_usd ?? "")
   }
@@ -55,26 +67,48 @@ export default function Rental() {
     if (!model) { alert("Model seçiniz"); return }
     if (!price || Number(price) <= 0) { alert("Makine fiyatı geçerli olmalıdır"); return }
     if (!customer.trim()) { alert("Müşteri adı giriniz"); return }
-    if (!email.trim()) { alert("E-posta adresi zorunludur"); return }
+    if (!yearlyHours) { alert("Yıllık çalışma saati seçiniz"); return }
+
     try {
       setLoading(true)
       setMessage("")
-      setMailStatus("")
+      setMailMessage("")
       setScenarios([])
+      setPdfFile("")
+
       const res = await API.post("/rental/rental-offer-auto", {
-        customer, email, model,
+        customer,
+        email,
+        model,
         purchase_price: Number(price),
         machine_count: Number(machineCount),
         yearly_hours: Number(yearlyHours),
         answers
       })
+
       setScenarios(res.data?.scenarios || [])
-      setMailStatus(res.data?.mail_status || "")
-      setMessage("Teklif hesaplandı")
+      setPdfFile(res.data?.pdf_file || "")
+      setMessage("Teklif hesaplandı ✅")
     } catch (err) {
       setMessage(err?.response?.data?.detail || "Teklif hesaplanamadı")
     } finally {
       setLoading(false)
+    }
+  }
+
+  const sendMail = async () => {
+    if (!email.trim()) { alert("E-posta adresi giriniz"); return }
+    if (!pdfFile) { alert("Önce teklif hesaplayınız"); return }
+
+    try {
+      setMailLoading(true)
+      setMailMessage("")
+      await API.post(`/rental/send-mail?email=${email}&pdf_file=${pdfFile}`)
+      setMailMessage("Mail gönderildi ✅")
+    } catch {
+      setMailMessage("Mail gönderilemedi ❌")
+    } finally {
+      setMailLoading(false)
     }
   }
 
@@ -84,17 +118,18 @@ export default function Rental() {
       monthly: Number(s.monthly_per_machine || 0),
     })), [scenarios])
 
-  const selectStyle = { padding: 10, borderRadius: 6, border: "1px solid #ccc", fontSize: 14, width: "100%" }
-  const inputStyle = { padding: 10, borderRadius: 6, border: "1px solid #ccc", fontSize: 14, width: "100%" }
-  const labelStyle = { display: "block", fontSize: 13, fontWeight: 500, marginBottom: 4 }
+  const selectStyle = { padding: 10, borderRadius: 6, border: "1px solid #ccc", fontSize: 14, width: "100%", background: "#fff" }
+  const inputStyle = { padding: 10, borderRadius: 6, border: "1px solid #ccc", fontSize: 14, width: "100%", background: "#fff" }
+  const labelStyle = { display: "block", fontSize: 13, fontWeight: 500, marginBottom: 4, color: "#444" }
   const fieldStyle = { marginBottom: 12 }
+  const box = { background: "#f7f7f7", border: "1px solid #e5e5e5", borderRadius: 10, padding: 16, marginBottom: 20 }
 
   return (
     <div style={{ padding: 16, maxWidth: 900, margin: "0 auto", fontFamily: "sans-serif" }}>
       <h2 style={{ marginBottom: 16, fontSize: 20 }}>Kiralama Teklifi</h2>
 
       {/* Form */}
-      <div style={{ background: "#f7f7f7", border: "1px solid #e5e5e5", borderRadius: 10, padding: 16, marginBottom: 20 }}>
+      <div style={box}>
         <h3 style={{ margin: "0 0 12px 0", fontSize: 15, color: "#003366" }}>Teklif Bilgileri</h3>
 
         <div style={fieldStyle}>
@@ -117,30 +152,27 @@ export default function Rental() {
             <input type="number" value={machineCount} onChange={(e) => setMachineCount(e.target.value)} style={inputStyle} />
           </div>
           <div>
-             <label style={labelStyle}>Yıllık Çalışma Saati</label>
-             <select value={yearlyHours} onChange={(e) => setYearlyHours(e.target.value)} style={selectStyle}>
-               <option value="">Saat seç</option>
-               <option value="1000">1.000 saat — Tek vardiya, az kullanım</option>
-               <option value="1500">1.500 saat — Tek vardiya, yoğun</option>
-               <option value="2000">2.000 saat — Standart tek vardiya</option>
-               <option value="3000">3.000 saat — Çift vardiya</option>
-               <option value="4000">4.000 saat — Yoğun çift vardiya</option>
-               <option value="6000">6.000 saat — Üç vardiya</option>
-             </select>
+            <label style={labelStyle}>Yıllık Çalışma Saati</label>
+            <select value={yearlyHours} onChange={(e) => setYearlyHours(e.target.value)} style={selectStyle}>
+              <option value="">Saat seç</option>
+              {hourOptions.map(o => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
           </div>
           <div>
             <label style={labelStyle}>Müşteri <span style={{ color: "red" }}>*</span></label>
             <input type="text" value={customer} onChange={(e) => setCustomer(e.target.value)} placeholder="Müşteri adı" style={inputStyle} />
           </div>
           <div>
-            <label style={labelStyle}>E-posta <span style={{ color: "red" }}>*</span></label>
+            <label style={labelStyle}>E-posta</label>
             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="ornek@mail.com" style={inputStyle} />
           </div>
         </div>
       </div>
 
       {/* Survey */}
-      <div style={{ background: "#f7f7f7", border: "1px solid #e5e5e5", borderRadius: 10, padding: 16, marginBottom: 20 }}>
+      <div style={box}>
         <h3 style={{ margin: "0 0 8px 0", fontSize: 15, color: "#003366" }}>Kullanım Anketi</h3>
         <div style={{ padding: 10, borderRadius: 8, background: riskColor, color: "#fff", fontWeight: 700, textAlign: "center", fontSize: 15, marginBottom: 12 }}>
           Genel Kullanım Seviyesi: {riskLabel}
@@ -169,25 +201,22 @@ export default function Rental() {
         </div>
       </div>
 
+      {/* Hesapla butonu */}
       <button onClick={calculateOffer} disabled={loading}
         style={{ padding: "12px 24px", border: "none", borderRadius: 8, cursor: "pointer", background: "#003366", color: "white", fontSize: 15, width: "100%" }}>
-        {loading ? "Hesaplanıyor..." : "Teklif Hesapla ve Mail Gönder"}
+        {loading ? "Hesaplanıyor..." : "Teklif Hesapla"}
       </button>
 
       {message && (
-        <div style={{ marginTop: 12, fontWeight: 600, color: message.includes("hesaplandı") ? "green" : "red" }}>
+        <div style={{ marginTop: 12, fontWeight: 600, color: message.includes("✅") ? "green" : "red" }}>
           {message}
-          {mailStatus && (
-            <span style={{ marginLeft: 8, color: mailStatus === "gönderildi" ? "green" : "orange" }}>
-              — Teklif maili {mailStatus}
-            </span>
-          )}
         </div>
       )}
 
       {scenarios.length > 0 && (
         <>
-          <div style={{ background: "#f7f7f7", border: "1px solid #e5e5e5", borderRadius: 10, padding: 16, marginTop: 20, overflowX: "auto" }}>
+          {/* Senaryo tablosu */}
+          <div style={{ ...box, marginTop: 20, overflowX: "auto" }}>
             <h3 style={{ margin: "0 0 12px 0", fontSize: 15, color: "#003366" }}>Kiralama Senaryoları</h3>
             <table style={{ borderCollapse: "collapse", width: "100%", fontSize: 14 }}>
               <thead>
@@ -211,7 +240,28 @@ export default function Rental() {
             </table>
           </div>
 
-          <div style={{ background: "#f7f7f7", border: "1px solid #e5e5e5", borderRadius: 10, padding: 16, marginTop: 20, height: 320 }}>
+          {/* Mail gönder */}
+          <div style={{ ...box, display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="E-posta adresi"
+              style={{ ...inputStyle, flex: 1, minWidth: 200 }}
+            />
+            <button onClick={sendMail} disabled={mailLoading}
+              style={{ padding: "10px 24px", background: "#e67e22", color: "white", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600, fontSize: 14, whiteSpace: "nowrap" }}>
+              {mailLoading ? "Gönderiliyor..." : "📧 Mail Gönder"}
+            </button>
+            {mailMessage && (
+              <span style={{ fontWeight: 600, color: mailMessage.includes("✅") ? "green" : "red" }}>
+                {mailMessage}
+              </span>
+            )}
+          </div>
+
+          {/* Grafik */}
+          <div style={{ ...box, height: 320 }}>
             <h3 style={{ color: "#0a3d62", fontSize: 15, marginBottom: 8 }}>⭐ Önerilen Optimum Kiralama Planı: 36 Ay</h3>
             <ResponsiveContainer width="100%" height="85%">
               <LineChart data={chartData}>
