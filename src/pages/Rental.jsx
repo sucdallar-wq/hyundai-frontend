@@ -49,7 +49,8 @@ export default function Rental() {
     setMessage("")
     setMailMessage("")
     const selected = machines.find((m) => m.model_code === code)
-    setPrice(selected?.price_usd ?? "")
+    setPrice(selected?.price_usd || selected?.price || selected?.list_price || "")
+    console.log("selected machine:", selected)
   }
 
   const handleAnswerChange = (index, value) => {
