@@ -29,11 +29,12 @@ export default function Rental() {
 
   const hourOptions = [
     { value: "1000", label: "1.000 saat — Tek vardiya, az kullanım" },
-    { value: "1500", label: "1.500 saat — Tek vardiya, yoğun" },
-    { value: "2000", label: "2.000 saat — Standart tek vardiya" },
-    { value: "3000", label: "3.000 saat — Çift vardiya" },
-    { value: "4000", label: "4.000 saat — Yoğun çift vardiya" },
-    { value: "6000", label: "6.000 saat — Üç vardiya" },
+    { value: "1500", label: "1.500 saat — Tek vardiya, standart" },
+    { value: "2000", label: "2.000 saat — Tek vardiya, yoğun" },
+    { value: "3000", label: "3.000 saat — Tek vardiya, çok yoğun" },
+    { value: "4000", label: "4.000 saat — Çift vardiya" },
+    { value: "5000", label: "5.000 saat — Üç vardiya" },
+    { value: "6000", label: "6.000 saat — Üç vardiya, yoğun" },
   ]
 
   useEffect(() => {
