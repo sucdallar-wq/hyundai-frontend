@@ -144,8 +144,13 @@ export default function Maintenance() {
           </div>
           <div>
             <label style={labelStyle}>İndirim %</label>
-            <input type="number" value={discount} onChange={e => setDiscount(e.target.value)}
-              placeholder="0" style={inputStyle} />
+            <input type="number" value={discount} 
+              onChange={e => {
+                const val = Number(e.target.value)
+                if (val > 10) { alert("Maksimum indirim oranı %10'dur"); return }
+                setDiscount(e.target.value)
+              }}
+              placeholder="0" max="10" min="0" style={inputStyle} />
           </div>
         </div>
 
