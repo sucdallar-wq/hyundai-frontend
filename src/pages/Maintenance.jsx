@@ -146,8 +146,12 @@ export default function Maintenance() {
             <label style={labelStyle}>İndirim %</label>
             <input type="number" value={discount} 
               onChange={e => {
-                const val = Number(e.target.value)
-                if (val > 10) { alert("Maksimum indirim oranı %10'dur"); return }
+                const val = parseFloat(e.target.value)
+                if (!isNaN(val) && val > 10) { 
+                  alert("Maksimum indirim oranı %10'dur")
+                  setDiscount("10")
+                  return 
+                }
                 setDiscount(e.target.value)
               }}
               placeholder="0" max="10" min="0" style={inputStyle} />
