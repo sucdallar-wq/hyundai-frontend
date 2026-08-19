@@ -9,6 +9,8 @@ export default function Maintenance() {
   const [model, setModel] = useState("")
   const [hour, setHour] = useState("")
   const [availableHours, setAvailableHours] = useState([])
+  const [roadKm, setRoadKm] = useState("")
+  const [roadRate, setRoadRate] = useState("")
   const [rows, setRows] = useState([])
   const [total, setTotal] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -56,7 +58,12 @@ export default function Maintenance() {
     if (rows.length === 0) { alert("Önce hesaplama yapınız"); return }
     try {
       const res = await API.post("/maintenance/pdf",
-        { customer, model, hours: Number(hour), discount: Number(discount || 0) },
+        {
+          customer, model, hours: Number(hour),
+          discount: Number(discount || 0),
+          road_km: Number(roadKm || 0),
+          road_rate_usd: Number(roadRate || 0),
+        },
         { responseType: "blob" }
       )
       const url = window.URL.createObjectURL(new Blob([res.data]))
@@ -74,27 +81,38 @@ export default function Maintenance() {
     if (rows.length === 0) { alert("Önce hesaplama yapınız"); return }
     try {
       await API.post(`/maintenance/send-mail?email=${email}`,
-        { customer, model, hours: Number(hour), discount: Number(discount || 0) }
+        {
+          customer, model, hours: Number(hour),
+          discount: Number(discount || 0),
+          road_km: Number(roadKm || 0),
+          road_rate_usd: Number(roadRate || 0),
+        }
       )
       alert("Mail gönderildi")
     } catch { alert("Mail gönderilemedi") }
   }
 
   const discountValue = Number(discount || 0)
-  const finalTotal = total ? total - (total * discountValue / 100) : 0
+  const roadTotal = Number(roadKm || 0) * Number(roadRate || 0)
+  const baseTotal = total || 0
+  const totalWithRoad = baseTotal + roadTotal
+  const finalTotal = totalWithRoad - (totalWithRoad * discountValue / 100)
+
+  const inputStyle = { padding: 10, borderRadius: 6, border: "1px solid #ccc", fontSize: 14, width: "100%", background: "#fff" }
+  const labelStyle = { display: "block", fontSize: 13, fontWeight: 500, marginBottom: 4, color: "#444" }
+  const box = { background: "#f7f7f7", border: "1px solid #e5e5e5", borderRadius: 10, padding: 16, marginBottom: 20 }
 
   return (
     <div style={{ padding: 16, maxWidth: 900, margin: "0 auto", fontFamily: "sans-serif" }}>
       <h2 style={{ marginBottom: 16, fontSize: 20 }}>Bakım Teklifi</h2>
 
       {/* Form */}
-      <div style={{ background: "#f7f7f7", border: "1px solid #e5e5e5", borderRadius: 10, padding: 16, marginBottom: 20 }}>
+      <div style={box}>
         <h3 style={{ margin: "0 0 12px 0", fontSize: 15, color: "#003366" }}>Teklif Bilgileri</h3>
 
         <div style={{ marginBottom: 12 }}>
-          <label style={{ display: "block", fontSize: 13, fontWeight: 500, marginBottom: 4, color: "#333" }}>Model</label>
-          <select value={model} onChange={e => handleModelChange(e.target.value)}
-            style={{ padding: 10, borderRadius: 6, border: "1px solid #ccc", fontSize: 14, width: "100%" }}>
+          <label style={labelStyle}>Model</label>
+          <select value={model} onChange={e => handleModelChange(e.target.value)} style={inputStyle}>
             <option value="">Model seç</option>
             {machines.map(m => (
               <option key={m.id} value={m.model_code}>{m.model_code} - {m.model_name}</option>
@@ -103,10 +121,9 @@ export default function Maintenance() {
         </div>
 
         <div style={{ marginBottom: 12 }}>
-          <label style={{ display: "block", fontSize: 13, fontWeight: 500, marginBottom: 4 }}>Bakım Paketi</label>
+          <label style={labelStyle}>Bakım Paketi</label>
           <select value={hour} onChange={e => { setHour(e.target.value); setRows([]); setTotal(null) }}
-            disabled={availableHours.length === 0}
-            style={{ padding: 10, borderRadius: 6, border: "1px solid #ccc", fontSize: 14, width: "100%" }}>
+            disabled={availableHours.length === 0} style={inputStyle}>
             <option value="">Saat seç</option>
             {availableHours.map(h => (
               <option key={h} value={h}>{h} Saat</option>
@@ -116,25 +133,43 @@ export default function Maintenance() {
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12, marginBottom: 12 }}>
           <div>
-            <label style={{ display: "block", fontSize: 13, fontWeight: 500, marginBottom: 4 }}>Müşteri</label>
+            <label style={labelStyle}>Müşteri</label>
             <input type="text" value={customer} onChange={e => setCustomer(e.target.value)}
-              placeholder="Müşteri adı"
-              style={{ padding: 10, borderRadius: 6, border: "1px solid #ccc", fontSize: 14, width: "100%" }} />
+              placeholder="Müşteri adı" style={inputStyle} />
           </div>
           <div>
-            <label style={{ display: "block", fontSize: 13, fontWeight: 500, marginBottom: 4 }}>E-posta</label>
+            <label style={labelStyle}>E-posta</label>
             <input type="email" value={email} onChange={e => setEmail(e.target.value)}
-              placeholder="ornek@mail.com"
-              style={{ padding: 10, borderRadius: 6, border: "1px solid #ccc", fontSize: 14, width: "100%" }} />
+              placeholder="ornek@mail.com" style={inputStyle} />
           </div>
           <div>
-            <label style={{ display: "block", fontSize: 13, fontWeight: 500, marginBottom: 4 }}>
-              İndirim Oranı (%)
-            </label>
+            <label style={labelStyle}>İndirim %</label>
             <input type="number" value={discount} onChange={e => setDiscount(e.target.value)}
-              placeholder="Örn: 10"
-              style={{ padding: 10, borderRadius: 6, border: "1px solid #ccc", fontSize: 14, width: "100%" }} />
+              placeholder="0" style={inputStyle} />
           </div>
+        </div>
+
+        {/* Yol bilgileri */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12, marginBottom: 16 }}>
+          <div>
+            <label style={labelStyle}>Yol (km)</label>
+            <input type="number" value={roadKm} onChange={e => setRoadKm(e.target.value)}
+              placeholder="Örn: 50" style={inputStyle} />
+          </div>
+          <div>
+            <label style={labelStyle}>Yol Ücreti (USD/km)</label>
+            <input type="number" value={roadRate} onChange={e => setRoadRate(e.target.value)}
+              placeholder="Örn: 1.5" step="0.01" style={inputStyle} />
+          </div>
+          {roadKm && roadRate && (
+            <div style={{ display: "flex", alignItems: "flex-end" }}>
+              <div style={{ background: "#e8f4fd", border: "1px solid #b3d4f0", borderRadius: 6, padding: "10px 14px", width: "100%" }}>
+                <span style={{ fontSize: 13, color: "#003366", fontWeight: 600 }}>
+                  Yol Toplamı: {roadTotal.toFixed(2)} USD
+                </span>
+              </div>
+            </div>
+          )}
         </div>
 
         <button onClick={calculate} disabled={loading}
@@ -149,7 +184,7 @@ export default function Maintenance() {
         <>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 16 }}>
             <div style={{ flex: 1, minWidth: 140, background: "#0a7", color: "white", padding: 12, borderRadius: 8, textAlign: "center", fontWeight: 700 }}>
-              Toplam<br />{total?.toFixed(2)} USD
+              Toplam<br />{totalWithRoad.toFixed(2)} USD
             </div>
             <div style={{ flex: 1, minWidth: 140, background: "#003366", color: "white", padding: 12, borderRadius: 8, textAlign: "center", fontWeight: 700 }}>
               İndirimli Toplam<br />{finalTotal.toFixed(2)} USD
@@ -167,7 +202,7 @@ export default function Maintenance() {
             </button>
           </div>
 
-          <div style={{ background: "#f7f7f7", border: "1px solid #e5e5e5", borderRadius: 10, padding: 16, overflowX: "auto" }}>
+          <div style={{ ...box, overflowX: "auto" }}>
             <h3 style={{ margin: "0 0 12px 0", fontSize: 15, color: "#003366" }}>Bakım Kalemleri</h3>
             <table style={{ borderCollapse: "collapse", width: "100%", fontSize: 14 }}>
               <thead>
@@ -189,6 +224,15 @@ export default function Maintenance() {
                     <td style={{ padding: "8px 10px", textAlign: "right", color: "#222" }}>{r.line_total?.toFixed(2)}</td>
                   </tr>
                 ))}
+                {roadKm && roadRate && Number(roadKm) > 0 && Number(roadRate) > 0 && (
+                  <tr style={{ background: "#e8f4fd" }}>
+                    <td style={{ padding: "8px 10px", color: "#003366", fontWeight: 600 }}>Yol</td>
+                    <td style={{ padding: "8px 10px", color: "#003366", fontWeight: 600 }}>Yol Ücreti</td>
+                    <td style={{ padding: "8px 10px", textAlign: "center", color: "#003366", fontWeight: 600 }}>{roadKm}</td>
+                    <td style={{ padding: "8px 10px", textAlign: "center", color: "#003366", fontWeight: 600 }}>km</td>
+                    <td style={{ padding: "8px 10px", textAlign: "right", color: "#003366", fontWeight: 600 }}>{roadTotal.toFixed(2)}</td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
