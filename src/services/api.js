@@ -2,9 +2,9 @@ import axios from "axios"
 
 console.log(import.meta.env.VITE_API_URL)
 
-const API = axios.create({
-  baseURL: "https://web-production-7b226.up.railway.app"
-})
+const API = axios.create({ 
+  baseURL: import.meta.env.VITE_API_URL || "https://hyundai-rental-tetas-ujiw.onrender.com" 
+}) 
 
 // Her isteğe token ekle
 API.interceptors.request.use((config) => {
